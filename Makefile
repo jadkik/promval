@@ -3,8 +3,8 @@ ANTLR_VERSION=4.10
 ANTLR_JAR=antlr-$(ANTLR_VERSION)-complete.jar
 
 PROJECT=grammars-v4
-GITHUB_URL=git@github.com:facetoe/$(PROJECT).git
-GRAMMAR_COMMIT=4a9bb0a5dc9cedbfafac688791ad0245a8d9d539
+GITHUB_URL=git@github.com:antlr/$(PROJECT).git
+GRAMMAR_COMMIT=3f8074f7730c272ddfd2d77df0ae83b46422fd98
 
 $(WORKDIR)/$(ANTLR_JAR):
 	mkdir -p $(WORKDIR)

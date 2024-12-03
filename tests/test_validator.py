@@ -1,5 +1,8 @@
+import re
+
 import pytest
 
+from promval import PromQLSyntaxError
 from promval.error import ValidationError
 from promval.validator import (
     AggregationGroupValidator,
@@ -99,7 +102,39 @@ def test_agg_function_validator():
         ) > 5
     """
     validator = AggregationFunctionValidator(blacklisted={"avg"})
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError, match="using blacklisted aggregator"):
+        validator.validate(expr)
+
+
+def test_new_agg_function_validator():
+    """Regression test: present_over_time is parsed correctly; it has been added after absent_over_time was."""
+    expr = """
+        avg by (group, name)
+        (
+            present_over_time(
+                label_replace(some_metric, "name", "$1", "othername", "(.*)")[6h:]
+            )
+        ) > 5
+    """
+    validator = AggregationFunctionValidator(blacklisted={"avg"})
+    with pytest.raises(ValidationError, match="using blacklisted aggregator"):
+        validator.validate(expr)
+
+
+def test_unsupported_agg_function_validator_fails():
+    """Test that aggregation functions that are not supported by the lexer fail at the parsing stage."""
+    expr = """
+        avg by (group, name)
+        (
+            unsupported_aggregation_over_time(
+                label_replace(some_metric, "name", "$1", "othername", "(.*)")[6h:]
+            )
+        ) > 5
+    """
+    validator = AggregationFunctionValidator(blacklisted={"avg"})
+    with pytest.raises(
+        PromQLSyntaxError, match=re.escape("mismatched input '(' expecting {')', ','}")
+    ):
         validator.validate(expr)
 
 
